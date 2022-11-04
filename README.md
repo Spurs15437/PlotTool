@@ -1,2 +1,3 @@
 # PlotTool
-Easy to plot
+
+A little toolbox for easy plot when use MATLAB
