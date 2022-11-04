@@ -4,6 +4,8 @@ classdef mainapp_exported < matlab.apps.AppBase
     properties (Access = public)
         UIFigure        matlab.ui.Figure
         GridLayout      matlab.ui.container.GridLayout
+        Knob            matlab.ui.control.Knob
+        Label           matlab.ui.control.Label
         yDropDown       matlab.ui.control.DropDown
         yDropDownLabel  matlab.ui.control.Label
         xDropDown       matlab.ui.control.DropDown
@@ -17,7 +19,8 @@ classdef mainapp_exported < matlab.apps.AppBase
     
     properties (Access = private)
         xdata
-        ydata % Description
+        ydata
+        h % Description
     end
     
 
@@ -37,7 +40,7 @@ classdef mainapp_exported < matlab.apps.AppBase
 
         % Button pushed function: Button
         function ButtonPushed(app, event)
-            plot(app.UIAxes,app.xdata,app.ydata);
+            app.h = plot(app.UIAxes,app.xdata,app.ydata);
 %             app.UIAxes.Title.String = '' 
             
         end
@@ -57,6 +60,12 @@ classdef mainapp_exported < matlab.apps.AppBase
         % Value changed function: yDropDown
         function yDropDownValueChanged(app, event)
             app.ydata = evalin('base',app.yDropDown.Value);            
+        end
+
+        % Value changed function: Knob
+        function KnobValueChanged(app, event)
+            value = app.Knob.Value;
+            set(app.h, 'lineWidth',value)
         end
     end
 
@@ -133,6 +142,21 @@ classdef mainapp_exported < matlab.apps.AppBase
             app.yDropDown.ValueChangedFcn = createCallbackFcn(app, @yDropDownValueChanged, true);
             app.yDropDown.Layout.Row = 3;
             app.yDropDown.Layout.Column = 6;
+
+            % Create Label
+            app.Label = uilabel(app.GridLayout);
+            app.Label.HorizontalAlignment = 'center';
+            app.Label.Layout.Row = 12;
+            app.Label.Layout.Column = [5 7];
+            app.Label.Text = '线的粗细';
+
+            % Create Knob
+            app.Knob = uiknob(app.GridLayout, 'continuous');
+            app.Knob.Limits = [1 3];
+            app.Knob.ValueChangedFcn = createCallbackFcn(app, @KnobValueChanged, true);
+            app.Knob.Layout.Row = [6 11];
+            app.Knob.Layout.Column = [5 7];
+            app.Knob.Value = 1;
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
