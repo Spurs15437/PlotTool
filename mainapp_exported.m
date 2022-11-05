@@ -4,18 +4,17 @@ classdef mainapp_exported < matlab.apps.AppBase
     properties (Access = public)
         UIFigure             matlab.ui.Figure
         GridLayout           matlab.ui.container.GridLayout
+        Button_2             matlab.ui.control.Button
+        yButton              matlab.ui.control.StateButton
+        xButton              matlab.ui.control.StateButton
         TitleEditField       matlab.ui.control.EditField
         TitleEditFieldLabel  matlab.ui.control.Label
         Spinner              matlab.ui.control.Spinner
         Label_2              matlab.ui.control.Label
-        Knob                 matlab.ui.control.Knob
-        Label                matlab.ui.control.Label
         yDropDown            matlab.ui.control.DropDown
         yDropDownLabel       matlab.ui.control.Label
         xDropDown            matlab.ui.control.DropDown
         xLabel               matlab.ui.control.Label
-        Button3              matlab.ui.control.Button
-        Button2              matlab.ui.control.Button
         Button               matlab.ui.control.Button
         UIAxes               matlab.ui.control.UIAxes
     end
@@ -42,17 +41,17 @@ classdef mainapp_exported < matlab.apps.AppBase
             
         end
 
+        % Drop down opening function: yDropDown
+        function yDropDownOpening(app, event)
+            app.yDropDown.Items = evalin('base','who');
+        end
+
         % Button pushed function: Button
         function ButtonPushed(app, event)
             app.h = plot(app.UIAxes,app.xdata,app.ydata);
             app.UIAxes.Title.String = app.TitleEditField.Value; 
             app.UIAxes.XLabel.String = app.xDropDown.Value;
             app.UIAxes.YLabel.String = app.yDropDown.Value;
-        end
-
-        % Drop down opening function: yDropDown
-        function yDropDownOpening(app, event)
-            app.yDropDown.Items = evalin('base','who');
         end
 
         % Value changed function: xDropDown
@@ -67,10 +66,10 @@ classdef mainapp_exported < matlab.apps.AppBase
             app.ydata = evalin('base',app.yDropDown.Value);            
         end
 
-        % Value changed function: Knob
+        % Callback function
         function KnobValueChanged(app, event)
             value = app.Knob.Value;
-            set(app.h, 'lineWidth',value)
+            set(app.h, 'lineWidth',value)   
         end
 
         % Value changed function: Spinner
@@ -85,6 +84,53 @@ classdef mainapp_exported < matlab.apps.AppBase
 %             assignin('base',"value",value)
 %             title(app.h,"value")
             app.UIAxes.Title.String = value;
+        end
+
+        % Value changed function: xButton
+        function xButtonValueChanged(app, event)
+            value = app.xButton.Value;
+            if value == true
+                set(app.UIAxes,'XDir','reverse');
+            else
+                set(app.UIAxes,'XDir','normal');
+            end
+            
+        end
+
+        % Value changed function: yButton
+        function yButtonValueChanged(app, event)
+            value = app.yButton.Value;
+            if value == true
+                set(app.UIAxes,'YDir','reverse');
+            else
+                set(app.UIAxes,'YDir','normal');
+            end
+        end
+
+        % Button pushed function: Button_2
+        function Button_2Pushed(app, event)
+            selpath = uigetdir('Examples/','选择你要保存的文件夹');
+%             cd(selpath)
+            prompt = {'输入文件名:','dpi:'};
+            dlgtitle = 'Input';
+            dims = [1 35];
+            definput = {'plotfig','600'};
+            answer = inputdlg(prompt,dlgtitle,dims,definput);
+%             assignin('base','answer',answer);
+            
+            filename = fullfile(selpath,answer{1});
+            dpi = str2double(answer{2});
+            
+            list = {'png','jpg'};
+            [index, ~] = listdlg("SelectionMode","single","PromptString",'Please select one',"ListString",list,"ListSize",[150,150],"InitialValue",1,'OKString','Apply');
+            
+            style = list{index};
+%             assignin('base','style',style);
+            
+            fullfilename = [filename '.' style];
+%             assignin('base',"fullfilename",fullfilename)
+%             print(app.UIFigure, fullfilename,['-r' answer{2}], ['-d' style]);
+            exportgraphics(app.UIAxes,fullfilename,"Resolution",dpi)
         end
     end
 
@@ -110,27 +156,16 @@ classdef mainapp_exported < matlab.apps.AppBase
             xlabel(app.UIAxes, 'X')
             ylabel(app.UIAxes, 'Y')
             zlabel(app.UIAxes, 'Z')
+            app.UIAxes.Box = 'on';
             app.UIAxes.Layout.Row = [1 9];
             app.UIAxes.Layout.Column = [1 4];
 
             % Create Button
             app.Button = uibutton(app.GridLayout, 'push');
             app.Button.ButtonPushedFcn = createCallbackFcn(app, @ButtonPushed, true);
-            app.Button.Layout.Row = 11;
-            app.Button.Layout.Column = 2;
+            app.Button.Layout.Row = 7;
+            app.Button.Layout.Column = 5;
             app.Button.Text = '绘图';
-
-            % Create Button2
-            app.Button2 = uibutton(app.GridLayout, 'push');
-            app.Button2.Layout.Row = 11;
-            app.Button2.Layout.Column = 3;
-            app.Button2.Text = 'Button2';
-
-            % Create Button3
-            app.Button3 = uibutton(app.GridLayout, 'push');
-            app.Button3.Layout.Row = 11;
-            app.Button3.Layout.Column = 4;
-            app.Button3.Text = 'Button3';
 
             % Create xLabel
             app.xLabel = uilabel(app.GridLayout);
@@ -162,26 +197,11 @@ classdef mainapp_exported < matlab.apps.AppBase
             app.yDropDown.Layout.Row = 3;
             app.yDropDown.Layout.Column = 6;
 
-            % Create Label
-            app.Label = uilabel(app.GridLayout);
-            app.Label.HorizontalAlignment = 'center';
-            app.Label.Layout.Row = 8;
-            app.Label.Layout.Column = 5;
-            app.Label.Text = '线的粗细';
-
-            % Create Knob
-            app.Knob = uiknob(app.GridLayout, 'continuous');
-            app.Knob.Limits = [1 3];
-            app.Knob.ValueChangedFcn = createCallbackFcn(app, @KnobValueChanged, true);
-            app.Knob.Layout.Row = [4 9];
-            app.Knob.Layout.Column = 5;
-            app.Knob.Value = 1;
-
             % Create Label_2
             app.Label_2 = uilabel(app.GridLayout);
             app.Label_2.HorizontalAlignment = 'right';
             app.Label_2.Layout.Row = 6;
-            app.Label_2.Layout.Column = 6;
+            app.Label_2.Layout.Column = 5;
             app.Label_2.Text = '线的粗细';
 
             % Create Spinner
@@ -190,7 +210,7 @@ classdef mainapp_exported < matlab.apps.AppBase
             app.Spinner.Limits = [0.1 Inf];
             app.Spinner.ValueChangedFcn = createCallbackFcn(app, @SpinnerValueChanged, true);
             app.Spinner.Layout.Row = 6;
-            app.Spinner.Layout.Column = 7;
+            app.Spinner.Layout.Column = 6;
             app.Spinner.Value = 1;
 
             % Create TitleEditFieldLabel
@@ -206,6 +226,27 @@ classdef mainapp_exported < matlab.apps.AppBase
             app.TitleEditField.Layout.Row = 4;
             app.TitleEditField.Layout.Column = 6;
             app.TitleEditField.Value = 'Title';
+
+            % Create xButton
+            app.xButton = uibutton(app.GridLayout, 'state');
+            app.xButton.ValueChangedFcn = createCallbackFcn(app, @xButtonValueChanged, true);
+            app.xButton.Text = '反转x轴';
+            app.xButton.Layout.Row = 8;
+            app.xButton.Layout.Column = 5;
+
+            % Create yButton
+            app.yButton = uibutton(app.GridLayout, 'state');
+            app.yButton.ValueChangedFcn = createCallbackFcn(app, @yButtonValueChanged, true);
+            app.yButton.Text = '反转y轴';
+            app.yButton.Layout.Row = 8;
+            app.yButton.Layout.Column = 6;
+
+            % Create Button_2
+            app.Button_2 = uibutton(app.GridLayout, 'push');
+            app.Button_2.ButtonPushedFcn = createCallbackFcn(app, @Button_2Pushed, true);
+            app.Button_2.Layout.Row = 7;
+            app.Button_2.Layout.Column = 6;
+            app.Button_2.Text = '导出';
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
