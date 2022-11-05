@@ -2,18 +2,22 @@ classdef mainapp_exported < matlab.apps.AppBase
 
     % Properties that correspond to app components
     properties (Access = public)
-        UIFigure        matlab.ui.Figure
-        GridLayout      matlab.ui.container.GridLayout
-        Knob            matlab.ui.control.Knob
-        Label           matlab.ui.control.Label
-        yDropDown       matlab.ui.control.DropDown
-        yDropDownLabel  matlab.ui.control.Label
-        xDropDown       matlab.ui.control.DropDown
-        xLabel          matlab.ui.control.Label
-        Button3         matlab.ui.control.Button
-        Button2         matlab.ui.control.Button
-        Button          matlab.ui.control.Button
-        UIAxes          matlab.ui.control.UIAxes
+        UIFigure             matlab.ui.Figure
+        GridLayout           matlab.ui.container.GridLayout
+        TitleEditField       matlab.ui.control.EditField
+        TitleEditFieldLabel  matlab.ui.control.Label
+        Spinner              matlab.ui.control.Spinner
+        Label_2              matlab.ui.control.Label
+        Knob                 matlab.ui.control.Knob
+        Label                matlab.ui.control.Label
+        yDropDown            matlab.ui.control.DropDown
+        yDropDownLabel       matlab.ui.control.Label
+        xDropDown            matlab.ui.control.DropDown
+        xLabel               matlab.ui.control.Label
+        Button3              matlab.ui.control.Button
+        Button2              matlab.ui.control.Button
+        Button               matlab.ui.control.Button
+        UIAxes               matlab.ui.control.UIAxes
     end
 
     
@@ -41,8 +45,9 @@ classdef mainapp_exported < matlab.apps.AppBase
         % Button pushed function: Button
         function ButtonPushed(app, event)
             app.h = plot(app.UIAxes,app.xdata,app.ydata);
-%             app.UIAxes.Title.String = '' 
-            
+            app.UIAxes.Title.String = app.TitleEditField.Value; 
+            app.UIAxes.XLabel.String = app.xDropDown.Value;
+            app.UIAxes.YLabel.String = app.yDropDown.Value;
         end
 
         % Drop down opening function: yDropDown
@@ -66,6 +71,20 @@ classdef mainapp_exported < matlab.apps.AppBase
         function KnobValueChanged(app, event)
             value = app.Knob.Value;
             set(app.h, 'lineWidth',value)
+        end
+
+        % Value changed function: Spinner
+        function SpinnerValueChanged(app, event)
+            value = app.Spinner.Value;
+            set(app.h, 'lineWidth',value)
+        end
+
+        % Value changed function: TitleEditField
+        function TitleEditFieldValueChanged(app, event)
+            value = app.TitleEditField.Value;
+%             assignin('base',"value",value)
+%             title(app.h,"value")
+            app.UIAxes.Title.String = value;
         end
     end
 
@@ -146,17 +165,47 @@ classdef mainapp_exported < matlab.apps.AppBase
             % Create Label
             app.Label = uilabel(app.GridLayout);
             app.Label.HorizontalAlignment = 'center';
-            app.Label.Layout.Row = 12;
-            app.Label.Layout.Column = [5 7];
+            app.Label.Layout.Row = 8;
+            app.Label.Layout.Column = 5;
             app.Label.Text = '线的粗细';
 
             % Create Knob
             app.Knob = uiknob(app.GridLayout, 'continuous');
             app.Knob.Limits = [1 3];
             app.Knob.ValueChangedFcn = createCallbackFcn(app, @KnobValueChanged, true);
-            app.Knob.Layout.Row = [6 11];
-            app.Knob.Layout.Column = [5 7];
+            app.Knob.Layout.Row = [4 9];
+            app.Knob.Layout.Column = 5;
             app.Knob.Value = 1;
+
+            % Create Label_2
+            app.Label_2 = uilabel(app.GridLayout);
+            app.Label_2.HorizontalAlignment = 'right';
+            app.Label_2.Layout.Row = 6;
+            app.Label_2.Layout.Column = 6;
+            app.Label_2.Text = '线的粗细';
+
+            % Create Spinner
+            app.Spinner = uispinner(app.GridLayout);
+            app.Spinner.Step = 0.1;
+            app.Spinner.Limits = [0.1 Inf];
+            app.Spinner.ValueChangedFcn = createCallbackFcn(app, @SpinnerValueChanged, true);
+            app.Spinner.Layout.Row = 6;
+            app.Spinner.Layout.Column = 7;
+            app.Spinner.Value = 1;
+
+            % Create TitleEditFieldLabel
+            app.TitleEditFieldLabel = uilabel(app.GridLayout);
+            app.TitleEditFieldLabel.HorizontalAlignment = 'center';
+            app.TitleEditFieldLabel.Layout.Row = 4;
+            app.TitleEditFieldLabel.Layout.Column = 5;
+            app.TitleEditFieldLabel.Text = 'Title';
+
+            % Create TitleEditField
+            app.TitleEditField = uieditfield(app.GridLayout, 'text');
+            app.TitleEditField.ValueChangedFcn = createCallbackFcn(app, @TitleEditFieldValueChanged, true);
+            app.TitleEditField.Layout.Row = 4;
+            app.TitleEditField.Layout.Column = 6;
+            app.TitleEditField.Value = 'Title';
 
             % Show the figure after all components are created
             app.UIFigure.Visible = 'on';
